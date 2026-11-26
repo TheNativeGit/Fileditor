@@ -1837,6 +1837,25 @@ async fn open_about_window(
   )
 }
 
+#[tauri::command]
+async fn open_updater_window(
+  app: AppHandle,
+  window: tauri::WebviewWindow,
+  title: Option<String>,
+) -> Result<(), String> {
+  let window_title = title.unwrap_or_else(|| "Software-Updates".to_string());
+  open_or_focus_child_window(
+    &app,
+    &window,
+    "updater",
+    "index.html?window=updater",
+    window_title,
+    (680.0, 560.0),
+    (520.0, 440.0),
+    tauri::window::Color(11, 16, 27, 255),
+  )
+}
+
 #[cfg(target_os = "windows")]
 pub fn force_focus_window(window: &tauri::WebviewWindow) {
   let _ = window.unminimize();
@@ -2196,7 +2215,7 @@ fn run_tauri_app(enable_single_instance: bool) {
         }
       } else if window.label() == "main" {
         if matches!(event, tauri::WindowEvent::Destroyed) {
-          for lbl in ["settings", "about"] {
+          for lbl in ["settings", "about", "updater"] {
             if let Some(child) = window.app_handle().get_webview_window(lbl) {
               let _ = child.destroy();
             }
@@ -2217,6 +2236,7 @@ fn run_tauri_app(enable_single_instance: bool) {
       set_window_title,
       open_settings_window,
       open_about_window,
+      open_updater_window,
       focus_current_window,
       validate_xml_schema,
       get_launch_file,

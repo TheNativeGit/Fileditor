@@ -11,6 +11,7 @@ import "./utils/monacoSetup";
 import App from "./App.tsx";
 import { SettingsWindowApp } from "./components/SettingsModal.tsx";
 import { AboutWindowApp } from "./components/AboutModal.tsx";
+import { UpdateWindowApp } from "./components/UpdateModal.tsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import "./index.css";
 
@@ -25,6 +26,10 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     ) : windowParam === "about" ? (
       <ErrorBoundary>
         <AboutWindowApp />
+      </ErrorBoundary>
+    ) : windowParam === "updater" ? (
+      <ErrorBoundary>
+        <UpdateWindowApp />
       </ErrorBoundary>
     ) : (
       <App />

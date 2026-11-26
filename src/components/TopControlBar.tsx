@@ -161,6 +161,14 @@ export const TopControlBar: React.FC = () => {
     }
   };
 
+  const openUpdateDialog = async () => {
+    if (isTauriEnv()) {
+      await invokeTauriSafe("open_updater_window", { title: t("updater.title") });
+    } else {
+      setIsUpdateOpen(true);
+    }
+  };
+
   const handleMenuClick = async (menu: string, key: string) => {
     if (menu === "file") {
       if (key === "new") {
@@ -217,7 +225,7 @@ export const TopControlBar: React.FC = () => {
       }
     } else if (menu === "help") {
       if (key === "check-updates") {
-        setIsUpdateOpen(true);
+        openUpdateDialog();
       } else if (key === "info") {
         openAboutDialog();
       }
@@ -612,15 +620,14 @@ export const TopControlBar: React.FC = () => {
         </div>
       )}
 
-      <UpdateModal
-        open={isUpdateOpen}
-        manualTrigger={true}
-        onClose={() => setIsUpdateOpen(false)}
-      />
-
       {/* Browser-only fallback modals when running outside Tauri */}
       {!isTauriEnv() && (
         <>
+          <UpdateModal
+            open={isUpdateOpen}
+            manualTrigger={true}
+            onClose={() => setIsUpdateOpen(false)}
+          />
           <SettingsModal visible={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
           <AboutModal open={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
         </>

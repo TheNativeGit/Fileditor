@@ -5,7 +5,8 @@
   "windows": [
     "main",
     "settings",
-    "about"
+    "about",
+    "updater"
   ],
   "permissions": [
     "core:default",

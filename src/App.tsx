@@ -12,10 +12,11 @@ import { GlobalTabBar } from "./components/GlobalTabBar";
 import { BottomStatusBar } from "./components/BottomStatusBar";
 import { ToDoEditor } from "./components/ToDoEditor";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { UpdateModal } from "./components/UpdateModal";
+import { check } from "@tauri-apps/plugin-updater";
+import { UpdateModal, SKIPPED_UPDATE_VERSION_KEY } from "./components/UpdateModal";
 import { useExternalFileWatch } from "./hooks/useExternalFileWatch";
 import { logger } from "./utils/logger";
-import { invokeTauriSafe, listenNativeFileDrop, listenTauri } from "./utils/tauriBridge";
+import { invokeTauriSafe, isTauriEnv, listenNativeFileDrop, listenTauri } from "./utils/tauriBridge";
 import { APP_VERSION } from "./version";
 import rawChangelog from "../CHANGELOG.md?raw";
 
@@ -251,8 +252,23 @@ const App: React.FC = () => {
     if (isInitializing || isIsolatedInstance) return;
     if (!useFileStore.getState().autoCheckUpdates) return;
 
-    const timer = setTimeout(() => {
-      setStartupUpdateOpen(true);
+    const timer = setTimeout(async () => {
+      if (!isTauriEnv()) {
+        setStartupUpdateOpen(true);
+        return;
+      }
+      try {
+        const update = await check();
+        if (update && update.available) {
+          const skippedVer = localStorage.getItem(SKIPPED_UPDATE_VERSION_KEY);
+          if (skippedVer !== update.version) {
+            const title = useI18nStore.getState().t("updater.title");
+            await invokeTauriSafe("open_updater_window", { title });
+          }
+        }
+      } catch (err: any) {
+        logger.warn("App", `Silent startup update check failed: ${err?.message || err}`);
+      }
     }, 1500);
 
     return () => clearTimeout(timer);
@@ -876,11 +892,13 @@ const App: React.FC = () => {
           <GraphViewModal />
         </React.Suspense>
       )}
-      <UpdateModal
-        open={startupUpdateOpen}
-        manualTrigger={false}
-        onClose={() => setStartupUpdateOpen(false)}
-      />
+      {!isTauriEnv() && (
+        <UpdateModal
+          open={startupUpdateOpen}
+          manualTrigger={false}
+          onClose={() => setStartupUpdateOpen(false)}
+        />
+      )}
     </ConfigProvider>
   );
 };
