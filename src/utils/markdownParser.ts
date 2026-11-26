@@ -320,17 +320,30 @@ export const LATEX_SYMBOLS: Record<string, string> = {
   "Omega": "Ω"
 };
 
+/**
+ * Returns the 0-based line index immediately after any leading YAML frontmatter block (`--- ... ---`),
+ * preserving original editor line numbers for preview-to-editor synchronization.
+ */
+export function getMarkdownBodyStartLine(lines: string[]): number {
+  if (lines.length < 3 || lines[0].trim() !== "---") return 0;
+  for (let k = 1; k < lines.length; k++) {
+    const trimmed = lines[k].trim();
+    if (trimmed === "---") {
+      const body = lines.slice(1, k);
+      const hasYamlKeyValue = body.some((l) => /^[a-zA-Z0-9_-]+\s*:/.test(l.trim()));
+      const isEmpty = body.every((l) => l.trim() === "");
+      return hasYamlKeyValue || isEmpty ? k + 1 : 0;
+    }
+    if (trimmed.startsWith("#")) return 0;
+  }
+  return 0;
+}
+
 export function renderMarkdownToHtml(md: string): string {
   if (!md) return "";
 
-  let mdContent = md;
-  const frontmatterRegex = /^---[\r\n]+([\s\S]*?)[\r\n]+---[\r\n]*/;
-  const fmMatch = mdContent.match(frontmatterRegex);
-  if (fmMatch && (fmMatch[1].includes(":") || fmMatch[1].trim() === "")) {
-    mdContent = mdContent.slice(fmMatch[0].length);
-  }
-
-  const lines = mdContent.split(/\r?\n/);
+  const lines = md.split(/\r?\n/);
+  const bodyStartLine = getMarkdownBodyStartLine(lines);
   let html = "";
   let inBlockquote = false;
   let inCodeBlock = false;
@@ -600,7 +613,7 @@ export function renderMarkdownToHtml(md: string): string {
     return t;
   };
 
-  for (let i = 0; i < lines.length; i++) {
+  for (let i = bodyStartLine; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
 
@@ -975,14 +988,8 @@ export function renderMarkdownToHtml(md: string): string {
 export function renderMarkdownForPrint(md: string): string {
   if (!md) return "";
 
-  let mdContent = md;
-  const frontmatterRegex = /^---[\r\n]+([\s\S]*?)[\r\n]+---[\r\n]*/;
-  const fmMatch = mdContent.match(frontmatterRegex);
-  if (fmMatch && (fmMatch[1].includes(":") || fmMatch[1].trim() === "")) {
-    mdContent = mdContent.slice(fmMatch[0].length);
-  }
-
-  const lines = mdContent.split(/\r?\n/);
+  const lines = md.split(/\r?\n/);
+  const bodyStartLine = getMarkdownBodyStartLine(lines);
   let html = "";
   let inBlockquote = false;
   let inCodeBlock = false;
@@ -1094,7 +1101,7 @@ export function renderMarkdownForPrint(md: string): string {
     return t;
   };
 
-  for (let i = 0; i < lines.length; i++) {
+  for (let i = bodyStartLine; i < lines.length; i++) {
     const rawLine = lines[i];
     const trimmed = rawLine.trim();
 

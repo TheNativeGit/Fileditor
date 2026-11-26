@@ -1,6 +1,6 @@
 [package]
 name = "fileditor"
-version = "1.0.2"
+version = "1.0.3"
 description = "Fileditor - Visual File Editor"
 authors = ["NativeProduction"]
 license = "MIT"

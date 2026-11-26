@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useFileStore } from "../../store/useFileStore";
-import { renderMarkdownToHtml } from "../../utils/markdownParser";
+import { renderMarkdownToHtml, getMarkdownBodyStartLine } from "../../utils/markdownParser";
 import { FileText, Maximize2, Minimize2, Layout, ChevronUp, ListTree } from "lucide-react";
 import { Dropdown, message } from "antd";
 import { resolveLinkToTabOrPath } from "../../utils/todoLinkParser";
@@ -58,9 +58,10 @@ export const MarkdownView: React.FC = () => {
   // Parse headings for Table of Contents live from current markdown
   const headings = useMemo(() => {
     const lines = jsonString.split(/\r?\n/);
+    const startLine = getMarkdownBodyStartLine(lines);
     const items: { line: number; text: string; level: number }[] = [];
     let inCode = false;
-    for (let i = 0; i < lines.length; i++) {
+    for (let i = startLine; i < lines.length; i++) {
       const trimmed = lines[i].trim();
       if (trimmed.startsWith("```")) {
         inCode = !inCode;
