@@ -1,0 +1,41 @@
+name: Feature Request
+description: Suggest an enhancement or new capability for Fileditor
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make Fileditor better? Describe the use case and proposed behavior below.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Related Area
+      options:
+        - JSON / XML & Schema Validation
+        - Markdown & PDF Export
+        - ToDo Workspace (.todo)
+        - Plain Text (.txt)
+        - 2D Document Graph View
+        - General UI / Shortcuts / Themes
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Use Case / Problem Statement
+      description: What workflow or problem would this feature solve?
+      placeholder: "When working with large XML schemas, I often want to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: How should this work in the UI or editor?
+    validations:
+      required: true

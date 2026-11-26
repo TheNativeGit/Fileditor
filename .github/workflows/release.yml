@@ -1,0 +1,146 @@
+name: Release Windows
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build Windows Installer, Portable ZIP & Updater Manifest
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Setup Rust stable
+        uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
+
+      - name: Cache Rust build artifacts
+        uses: swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run Rust security & unit tests
+        working-directory: src-tauri
+        run: cargo test
+
+      - name: Build Tauri Windows release & updater signature
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: node scripts/build_tauri.cjs
+
+      # Optional SignPath Foundation Open-Source Code Signing hook:
+      # Once SignPath Foundation approves the project, uncomment and configure:
+      # - name: Submit artifacts to SignPath for code signing
+      #   uses: signpath/github-action-submit-signing-request@v1
+      #   with:
+      #     api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+      #     organization-id: '${{ vars.SIGNPATH_ORG_ID }}'
+      #     project-slug: 'fileditor'
+      #     signing-policy-slug: 'release-signing'
+      #     artifact-configuration-slug: 'nsis-installer'
+      #     wait-for-completion: true
+
+      - name: Package Portable ZIP, Checksums, latest.json & Release Notes
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $pkg = Get-Content "package.json" -Raw | ConvertFrom-Json
+          $ver = $pkg.version
+          $tag = if ($env:GITHUB_REF_NAME -like "v*") { $env:GITHUB_REF_NAME } else { "v$ver" }
+
+          $outDir = "release-dist"
+          New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+
+          # 1. Extract matching changelog section from CHANGELOG.md (single source of truth)
+          $changelogRaw = Get-Content "CHANGELOG.md" -Raw
+          $escapedVer = [regex]::Escape($ver)
+          $pattern = "(?ms)^##\s+\[$escapedVer\][^\r\n]*\r?\n(.*?)(?=^##\s+\[|\z)"
+          $m = [regex]::Match($changelogRaw, $pattern)
+          if ($m.Success -and $m.Groups[1].Value.Trim().Length -gt 0) {
+            $notes = $m.Groups[1].Value.Trim()
+          } else {
+            $fallback = [regex]::Match($changelogRaw, "(?ms)^##\s+\[[^\]]+\][^\r\n]*\r?\n(.*?)(?=^##\s+\[|\z)")
+            $notes = if ($fallback.Success) { $fallback.Groups[1].Value.Trim() } else { "Fileditor $tag" }
+          }
+          Set-Content -Path "$outDir/release_notes.md" -Value $notes -Encoding UTF8
+
+          # 2. Copy NSIS Setup EXE
+          $nsisExe = "src-tauri/target/release/bundle/nsis/Fileditor_${ver}_x64-setup.exe"
+          if (-not (Test-Path $nsisExe)) {
+            throw "Expected NSIS installer not found at $nsisExe"
+          }
+          Copy-Item $nsisExe -Destination "$outDir/" -Force
+
+          # 3. Create Portable ZIP (Standalone EXE + License notices)
+          $portableStage = "$outDir/portable-stage"
+          New-Item -ItemType Directory -Force -Path $portableStage | Out-Null
+          Copy-Item "src-tauri/target/release/Fileditor.exe" -Destination "$portableStage/Fileditor.exe" -Force
+          Copy-Item "LICENSE" -Destination "$portableStage/LICENSE.txt" -Force
+          Copy-Item "THIRD_PARTY_NOTICES.md" -Destination "$portableStage/THIRD_PARTY_NOTICES.md" -Force
+          $portableZip = "$outDir/Fileditor_${ver}_x64-portable.zip"
+          Compress-Archive -Path "$portableStage/*" -DestinationPath $portableZip -Force
+          Remove-Item -Recurse -Force $portableStage
+
+          # 4. Generate Tauri Auto-Updater manifest (latest.json) if .sig was produced
+          $sigFile = "${nsisExe}.sig"
+          if (Test-Path $sigFile) {
+            Copy-Item $sigFile -Destination "$outDir/" -Force
+            $signature = (Get-Content $sigFile -Raw).Trim()
+            $setupFileName = "Fileditor_${ver}_x64-setup.exe"
+            $downloadUrl = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$tag/$setupFileName"
+            $manifest = [ordered]@{
+              version   = $ver
+              notes     = $notes
+              pub_date  = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+              platforms = [ordered]@{
+                "windows-x86_64" = [ordered]@{
+                  signature = $signature
+                  url       = $downloadUrl
+                }
+              }
+            }
+            $manifestJson = $manifest | ConvertTo-Json -Depth 6
+            Set-Content -Path "$outDir/latest.json" -Value $manifestJson -Encoding UTF8
+          } else {
+            Write-Warning "No .sig file found (TAURI_SIGNING_PRIVATE_KEY secret not set) — skipping latest.json"
+          }
+
+          # 5. Generate SHA256SUMS.txt
+          $hashLines = @()
+          foreach ($f in @("Fileditor_${ver}_x64-setup.exe", "Fileditor_${ver}_x64-portable.zip")) {
+            $h = (Get-FileHash "$outDir/$f" -Algorithm SHA256).Hash.ToLower()
+            $hashLines += "$h  $f"
+          }
+          Set-Content -Path "$outDir/SHA256SUMS.txt" -Value ($hashLines -join "`n") -Encoding UTF8
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
+        with:
+          name: "Fileditor ${{ github.ref_name }}"
+          body_path: release-dist/release_notes.md
+          draft: false
+          prerelease: false
+          files: |
+            release-dist/Fileditor_*_x64-setup.exe
+            release-dist/Fileditor_*_x64-setup.exe.sig
+            release-dist/Fileditor_*_x64-portable.zip
+            release-dist/latest.json
+            release-dist/SHA256SUMS.txt

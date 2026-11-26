@@ -1,0 +1,631 @@
+:root {
+  --color-primary-accent: #a855f7;
+  --color-primary-accent-rgb: 168, 85, 247;
+  --color-todo-task-text: #e2e8f0;
+  --color-editor-heading: #a78bfa;
+  --color-editor-link: #10b981;
+  --color-editor-inline-code: #3b82f6;
+  --color-preview-inline-code: #fb7185;
+  --color-preview-link: #c084fc;
+  --color-preview-heading: #f1f5f9;
+  --color-gutter-unsaved: #f97316;
+  --color-gutter-saved: #22c55e;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #090d16;
+    color: #e2e8f0;
+  }
+}
+
+/* Custom Scrollbars im Stil des dunklen Themes */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f293d;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Eigene Monaco Editor und Ant Design Overrides */
+
+/* Ant Design Dropdown Menus: Enable scrollbars and max-height so long lists don't overflow the viewport */
+.ant-dropdown .ant-dropdown-menu,
+.ant-dropdown-menu-submenu .ant-dropdown-menu,
+.restore-dropdown-submenu .ant-dropdown-menu {
+  max-height: 68vh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.ant-segmented {
+  background-color: #141c2c !important;
+  border: 1px solid #1f293d !important;
+}
+
+.ant-segmented-item-selected {
+  background-color: #1f293d !important;
+  color: #ffffff !important;
+}
+
+.ant-segmented-item {
+  color: #94a3b8 !important;
+}
+
+.ant-segmented-item:hover {
+  color: #e2e8f0 !important;
+}
+
+.ant-switch {
+  background-color: #1f293d !important;
+}
+
+.ant-switch-checked {
+  background-color: var(--color-primary-accent, #a855f7) !important;
+}
+
+.splitter-bar:hover {
+  background-color: var(--color-primary-accent, #a855f7) !important;
+}
+
+/* Active line highlight in Markdown preview */
+.markdown-line-active {
+  background-color: rgba(var(--color-primary-accent-rgb, 168, 85, 247), 0.22) !important;
+  box-shadow: -6px 0 0 0 var(--color-primary-accent, #a855f7) !important;
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+  transition: all 0.15s ease-in-out;
+}
+
+/* Active table row and cell highlight */
+tr.markdown-line-active {
+  background-color: rgba(var(--color-primary-accent-rgb, 168, 85, 247), 0.15) !important;
+  box-shadow: none !important;
+}
+
+tr.markdown-line-active > td,
+tr.markdown-line-active > th {
+  background-color: rgba(var(--color-primary-accent-rgb, 168, 85, 247), 0.15) !important;
+  transition: background-color 0.15s ease-in-out;
+}
+
+tr.markdown-line-active > td:first-child,
+tr.markdown-line-active > th:first-child {
+  border-left: 3px solid var(--color-primary-accent, #a855f7) !important;
+}
+
+.markdown-cell-active {
+  background-color: rgba(var(--color-primary-accent-rgb, 168, 85, 247), 0.35) !important;
+  outline: 2px solid var(--color-primary-accent, #a855f7) !important;
+  outline-offset: -2px;
+  border-radius: 2px;
+  transition: background-color 0.15s ease-in-out, outline 0.15s ease-in-out;
+}
+
+/* Monaco line modification decorations (Notepad++ style) */
+.monaco-line-orange {
+  background-color: var(--color-gutter-unsaved, #f97316) !important;
+  width: 3px !important;
+  margin-left: 3px;
+  height: 100% !important;
+}
+.monaco-line-green {
+  background-color: var(--color-gutter-saved, #22c55e) !important;
+  width: 3px !important;
+  margin-left: 3px;
+  height: 100% !important;
+}
+.monaco-line-blue {
+  background-color: #3b82f6 !important;
+  width: 3px !important;
+  margin-left: 3px;
+  height: 100% !important;
+}
+
+/* Ensure linesDecorationsClassName covers 100% of wrapped visual line height */
+.monaco-editor .margin-view-overlays .cldr.monaco-line-orange {
+  background-color: var(--color-gutter-unsaved, #f97316) !important;
+  height: 100% !important;
+}
+.monaco-editor .margin-view-overlays .cldr.monaco-line-green {
+  background-color: var(--color-gutter-saved, #22c55e) !important;
+  height: 100% !important;
+}
+
+/* Docusaurus <details> and <summary> Accordion Card Styling */
+.docusaurus-details {
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  border-radius: 0.5rem;
+  background-color: rgba(15, 23, 42, 0.4);
+  margin: 0.85rem 0;
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+.docusaurus-details:hover {
+  border-color: rgba(100, 116, 139, 0.6);
+}
+.docusaurus-details summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  background-color: rgba(15, 23, 42, 0.8);
+  display: flex;
+  align-items: center;
+  user-select: none;
+  transition: background-color 0.15s ease-in-out;
+}
+.docusaurus-details summary::-webkit-details-marker {
+  display: none;
+}
+.docusaurus-details summary:hover {
+  background-color: rgba(30, 41, 59, 0.7);
+  color: #ffffff;
+}
+.docusaurus-details summary::before {
+  content: "▶";
+  display: inline-block;
+  font-size: 9px;
+  color: var(--color-primary-accent, #a855f7);
+  transition: transform 0.2s ease-in-out;
+  margin-right: 8px;
+}
+.docusaurus-details[open] summary::before {
+  transform: rotate(90deg);
+}
+.docusaurus-details-content {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgba(51, 65, 85, 0.4);
+  color: #cbd5e1;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Fix Monaco find widget close button hover and overlap blockers */
+.monaco-editor .find-widget {
+  z-index: 999 !important;
+}
+.monaco-editor .find-widget .button.close,
+.monaco-editor .find-widget .button[title*="Close"],
+.monaco-editor .find-widget .close-tracker {
+  z-index: 1000 !important;
+  pointer-events: auto !important;
+}
+.monaco-editor .monaco-hover,
+.monaco-hover,
+.monaco-editor-hover,
+.monaco-hover-content {
+  pointer-events: none !important;
+}
+
+/* Restlos Ausblenden aller Tooltips/Hovers im Strg+F Find-Widget */
+.monaco-editor .find-widget .monaco-hover,
+.monaco-editor .find-widget-wrapper .monaco-hover,
+.find-widget .monaco-hover,
+.monaco-hover.find-widget-hover,
+.monaco-editor:has(.find-widget:hover) .monaco-hover,
+.find-widget:hover ~ .monaco-hover,
+body:has(.find-widget:hover) .monaco-hover {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Ant Design Tooltips non-interactive (disappears as soon as mouse leaves target icon) */
+.ant-tooltip,
+.ant-tooltip-inner,
+.ant-tooltip-arrow {
+  pointer-events: none !important;
+}
+
+/* Info Modal dark background and border overrides (removes white border) */
+.info-modal .ant-modal-content {
+  background-color: #090d16 !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 8px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+.info-modal .ant-modal-header,
+.info-modal .ant-modal-body,
+.info-modal .ant-modal-footer {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* Markdown zoom system */
+.markdown-zoom-container p,
+.markdown-zoom-container li,
+.markdown-zoom-container .md-list-item,
+.markdown-zoom-container table,
+.markdown-zoom-container blockquote {
+  font-size: 0.82em !important;
+  line-height: 1.6 !important;
+}
+
+.markdown-zoom-container code:not(pre code) {
+  font-size: 0.9em !important;
+  vertical-align: middle !important;
+  line-height: 1.2 !important;
+}
+
+.markdown-zoom-container h1 {
+  font-size: 1.45em !important;
+}
+
+.markdown-zoom-container h2 {
+  font-size: 1.25em !important;
+}
+
+.markdown-zoom-container h3 {
+  font-size: 1.12em !important;
+}
+
+.markdown-zoom-container h4 {
+  font-size: 1.0em !important;
+}
+
+.markdown-zoom-container h5 {
+  font-size: 0.9em !important;
+}
+
+
+/* Vector PDF Print & Export Styles (100% Selectable Text, Paged Media) */
+#print-root {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm 14mm 16mm 14mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  }
+
+  #root {
+    display: none !important;
+  }
+
+  #print-root {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .print-page-footer {
+    position: fixed;
+    bottom: -10mm;
+    right: 0;
+    font-size: 8.5pt;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #64748b;
+    pointer-events: none;
+  }
+
+  .print-page-footer::after {
+    content: "Seite " counter(page);
+  }
+
+  /* Prevent page cuts across elements */
+  .print-p,
+  .print-table-wrapper,
+  .print-table,
+  .print-table tr,
+  .print-code-block,
+  .print-pre,
+  .print-blockquote,
+  .print-admonition,
+  .print-task-item,
+  li {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Prevent orphaned headings */
+  h1, h2, h3, h4, h5, h6,
+  .print-h1, .print-h2, .print-h3, .print-h4, .print-h5, .print-h6 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+    color: #0f172a !important;
+  }
+
+  .print-h1 {
+    font-size: 19pt;
+    font-weight: 700;
+    margin-top: 16pt;
+    margin-bottom: 9pt;
+    padding-bottom: 4pt;
+    border-bottom: 2px solid #e2e8f0;
+    color: #020617 !important;
+  }
+
+  .print-h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    margin-top: 13pt;
+    margin-bottom: 7pt;
+    padding-bottom: 3pt;
+    border-bottom: 1px solid #e2e8f0;
+    color: #0f172a !important;
+  }
+
+  .print-h3 {
+    font-size: 12pt;
+    font-weight: 600;
+    margin-top: 11pt;
+    margin-bottom: 5pt;
+    color: #1e293b !important;
+  }
+
+  .print-h4 {
+    font-size: 10.5pt;
+    font-weight: 600;
+    margin-top: 9pt;
+    margin-bottom: 4pt;
+    color: #334155 !important;
+  }
+
+  .print-h5, .print-h6 {
+    font-size: 9.5pt;
+    font-weight: 600;
+    margin-top: 7pt;
+    margin-bottom: 3pt;
+    color: #475569 !important;
+  }
+
+  .print-p {
+    font-size: 9.5pt;
+    line-height: 1.55;
+    margin-top: 5pt;
+    margin-bottom: 5pt;
+    color: #1e293b !important;
+  }
+
+  .print-bold {
+    font-weight: 700 !important;
+    color: #0f172a !important;
+  }
+
+  .print-italic {
+    font-style: italic !important;
+    color: #334155 !important;
+  }
+
+  .print-del {
+    text-decoration: line-through !important;
+    color: #94a3b8 !important;
+  }
+
+  .print-inline-code {
+    font-family: "Consolas", "Courier New", monospace !important;
+    font-size: 8.5pt !important;
+    background-color: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 1pt 3pt !important;
+    border-radius: 3px !important;
+    color: #be123c !important;
+  }
+
+  /* Code Blocks */
+  .print-code-block {
+    margin: 7pt 0;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4px;
+    background-color: #f8fafc !important;
+  }
+
+  .print-code-header {
+    background-color: #f1f5f9 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 2.5pt 7pt;
+    font-size: 7.5pt;
+    font-family: "Consolas", monospace;
+    font-weight: 600;
+    color: #64748b !important;
+    text-transform: uppercase;
+  }
+
+  .print-pre {
+    margin: 0 !important;
+    padding: 7pt !important;
+    background-color: #f8fafc !important;
+    font-family: "Consolas", "Courier New", monospace !important;
+    font-size: 8pt !important;
+    line-height: 1.4 !important;
+    color: #0f172a !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  /* Tables */
+  .print-table-wrapper {
+    margin: 8pt 0;
+    width: 100%;
+  }
+
+  .print-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 8.5pt !important;
+    color: #0f172a !important;
+  }
+
+  .print-table thead {
+    display: table-header-group !important;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 4.5pt 6pt !important;
+    text-align: left !important;
+  }
+
+  .print-table th {
+    background-color: #f1f5f9 !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+  }
+
+  .print-table tr:nth-child(even) td {
+    background-color: #f8fafc !important;
+  }
+
+  /* Blockquotes */
+  .print-blockquote {
+    border-left: 3.5px solid #9333ea !important;
+    background-color: #faf5ff !important;
+    color: #3b0764 !important;
+    padding: 5pt 9pt !important;
+    margin: 7pt 0 !important;
+    font-style: italic;
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* Docusaurus Admonitions */
+  .print-admonition {
+    margin: 7pt 0 !important;
+    padding: 6pt 9pt !important;
+    border-left: 3.5px solid #64748b !important;
+    border-radius: 0 4px 4px 0;
+    background-color: #f8fafc !important;
+    font-size: 9pt;
+  }
+
+  .print-admonition-note {
+    border-left-color: #3b82f6 !important;
+    background-color: #eff6ff !important;
+  }
+
+  .print-admonition-tip {
+    border-left-color: #10b981 !important;
+    background-color: #f0fdf4 !important;
+  }
+
+  .print-admonition-info {
+    border-left-color: #06b6d4 !important;
+    background-color: #ecfeff !important;
+  }
+
+  .print-admonition-caution,
+  .print-admonition-warning {
+    border-left-color: #f59e0b !important;
+    background-color: #fffbeb !important;
+  }
+
+  .print-admonition-danger {
+    border-left-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+  }
+
+  .print-admonition-title {
+    font-weight: 700;
+    font-size: 9pt;
+    margin-bottom: 2pt;
+    color: #0f172a !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .print-admonition-content {
+    color: #1e293b !important;
+    line-height: 1.45;
+  }
+
+  /* Lists */
+  ul.print-ul {
+    list-style-type: disc !important;
+    padding-left: 15pt !important;
+    margin: 3pt 0 !important;
+  }
+
+  ol.print-ol {
+    list-style-type: decimal !important;
+    padding-left: 15pt !important;
+    margin: 3pt 0 !important;
+  }
+
+  li.print-li {
+    margin: 1.5pt 0 !important;
+    font-size: 9.5pt;
+    line-height: 1.45;
+    color: #1e293b !important;
+  }
+
+  .print-task-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4.5pt !important;
+    list-style: none !important;
+    margin: 1.5pt 0 !important;
+  }
+
+  .print-checkbox {
+    display: inline-block;
+    width: 9pt;
+    height: 9pt;
+    border: 1.2px solid #64748b;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .print-checkbox.checked {
+    background-color: #0f172a;
+    border-color: #0f172a;
+    position: relative;
+  }
+
+  .print-checkbox.checked::after {
+    content: "✓";
+    color: #ffffff;
+    font-size: 7.5pt;
+    position: absolute;
+    top: -2.5pt;
+    left: 1pt;
+  }
+
+  .print-link {
+    color: #7c3aed !important;
+    text-decoration: underline;
+  }
+
+  hr.print-hr {
+    border: none !important;
+    border-top: 1px solid #cbd5e1 !important;
+    margin: 10pt 0 !important;
+  }
+}

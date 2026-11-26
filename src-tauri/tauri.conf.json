@@ -1,0 +1,120 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Fileditor",
+  "version": "1.0.0",
+  "identifier": "com.fileditor.app",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:3000",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "title": "Fileditor - Visual File Editor",
+        "width": 1180,
+        "height": 760,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost https: data: blob:; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost",
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "**"
+        ]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "publisher": "NativeProduction",
+    "copyright": "Copyright © 2026 NativeProduction",
+    "homepage": "https://nativeproduction.de",
+    "shortDescription": "Visual Multi-Format Editor for JSON, XML, Markdown & ToDo",
+    "licenseFile": "../LICENSE",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "fileAssociations": [
+      {
+        "ext": [
+          "txt",
+          "text",
+          "log"
+        ],
+        "name": "Text Document",
+        "description": "Plain Text Document",
+        "role": "Editor"
+      },
+      {
+        "ext": [
+          "md",
+          "markdown"
+        ],
+        "name": "Markdown Document",
+        "description": "Markdown Document",
+        "role": "Editor"
+      },
+      {
+        "ext": [
+          "json"
+        ],
+        "name": "JSON Document",
+        "description": "JSON Data Document",
+        "role": "Editor"
+      },
+      {
+        "ext": [
+          "xml"
+        ],
+        "name": "XML Document",
+        "description": "XML Data Document",
+        "role": "Editor"
+      },
+      {
+        "ext": [
+          "todo"
+        ],
+        "name": "ToDo Document",
+        "description": "Fileditor ToDo Workspace",
+        "role": "Editor"
+      }
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "both",
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico",
+        "sidebarImage": "icons/nsis-sidebar.bmp",
+        "headerImage": "icons/nsis-header.bmp",
+        "uninstallerHeaderImage": "icons/nsis-header.bmp",
+        "languages": [
+          "English",
+          "German",
+          "Spanish"
+        ]
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDYyQzQ0RUUwRkU4Q0ZGOApSV1Q0eitnUDdrUXNCa3F3ZjRENFROR1BwOFp2dFQ3M3JmZVBSelA2eE01UlRPaER0NzNWUS8vbAo=",
+      "endpoints": [
+        "https://github.com/TheNativeGit/Fileditor/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

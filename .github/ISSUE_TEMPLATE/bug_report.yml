@@ -1,0 +1,70 @@
+name: Bug Report
+description: Report a reproducible bug or unexpected behavior in Fileditor
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the details below so the issue can be reproduced quickly.
+
+  - type: input
+    id: version
+    attributes:
+      label: Fileditor Version
+      description: Check the top-right corner or Help -> About Fileditor
+      placeholder: "e.g. v1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Windows Version
+      placeholder: "e.g. Windows 11 24H2 (x64)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Editor Mode / Component
+      options:
+        - JSON Editor / Schema Validation
+        - XML Editor / Schema Validation
+        - Markdown Editor / Live Preview / PDF Export
+        - ToDo Workspace (.todo)
+        - Plain Text (.txt)
+        - 2D Document Graph View
+        - Tabs / Multi-Window / Session Restore
+        - Settings / Themes / Translations
+        - Installer / Auto-Updater
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Clear, numbered steps to trigger the issue
+      placeholder: |
+        1. Open Fileditor and create a new JSON file...
+        2. Open the Schema panel and select...
+        3. Observe error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs. Actual Behavior
+      placeholder: Describe what you expected to happen and what happened instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output / Sample Snippet (Optional)
+      description: "Optional excerpt from %LOCALAPPDATA%\\com.fileditor.app\\logs\\fileditor.log (please remove any personal file paths!)"
+      render: text
