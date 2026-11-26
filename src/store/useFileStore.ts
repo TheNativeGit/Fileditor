@@ -2535,41 +2535,30 @@ export const useFileStore = create<FileStore>((set, get) => ({
     let finalTabs = (await Promise.all(tabPromises)).filter((t): t is Tab => t !== null);
 
     if (finalTabs.length === 0) {
-      if (isIsolated) {
-        set({ jsonTabs: [], activeJsonTabId: null });
+      const firstRunCompleted = localStorage.getItem("fileditor_first_run_completed") === "1";
+      if (isIsolated || firstRunCompleted) {
+        set({ jsonTabs: [], activeJsonTabId: null, jsonString: "" });
         return;
       }
+      localStorage.setItem("fileditor_first_run_completed", "1");
       finalTabs = [
         {
-          id: "json_default",
+          id: "welcome_default",
           path: null,
-          title: "Beispiel.json",
-          content: initialJson,
-          lastSavedContent: initialJson,
-          lastModifiedTime: null,
-          type: "json"
-        },
-        {
-          id: "xml_default",
-          path: null,
-          title: "Beispiel.xml",
-          content: initialXml,
-          lastSavedContent: initialXml,
-          lastModifiedTime: null,
-          type: "xml"
-        },
-        {
-          id: "markdown_default",
-          path: null,
-          title: "Beispiel.md",
+          title: "Welcome.md",
           content: initialMarkdown,
           lastSavedContent: initialMarkdown,
+          initialContent: initialMarkdown,
           lastModifiedTime: null,
           type: "markdown"
         }
       ];
-      loadedActiveTabId = "markdown_default";
+      loadedActiveTabId = "welcome_default";
+    } else {
+      localStorage.setItem("fileditor_first_run_completed", "1");
     }
+    void initialJson;
+    void initialXml;
 
     const activeTab = finalTabs.find(t => t.id === loadedActiveTabId) || finalTabs[0];
     const activeMode = getTabMode(activeTab);

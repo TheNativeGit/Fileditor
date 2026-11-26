@@ -17,190 +17,38 @@ import { useExternalFileWatch } from "./hooks/useExternalFileWatch";
 import { logger } from "./utils/logger";
 import { invokeTauriSafe, listenNativeFileDrop, listenTauri } from "./utils/tauriBridge";
 import { APP_VERSION } from "./version";
+import rawChangelog from "../CHANGELOG.md?raw";
 
 const GraphViewModal = React.lazy(() => import("./components/GraphViewModal").then(m => ({ default: m.GraphViewModal })));
 
-// Sample modern project & team management dashboard dataset
-const exampleJSON = {
-  "Projektname": "Mars Colonization Initiative",
-  "Prioritaet": "Kritisch",
-  "Budget_in_Mio_USD": 4500,
-  "Aktiv": true,
-  "System_Settings": {
-    "Verschluesselung": true,
-    "Sync_Intervall_Sekunden": 300,
-    "Backup_Server": "Earth-Backup-01"
-  },
-  "Tags": ["Space", "Aerospace", "NASA", "Colony"],
-  "Team_Mitglieder": [
-    {
-      "Name": "Dr. Sarah Connor",
-      "Rolle": "Missionsleiterin",
-      "Erfahrung_Jahre": 12,
-      "Fokusbereiche": ["Antriebstechnik", "Navigation"]
-    },
-    {
-      "Name": "John Doe",
-      "Rolle": "Chef-Geologe",
-      "Erfahrung_Jahre": 8,
-      "Fokusbereiche": ["Bodenanalysen", "Wasserquellen-Suche"]
-    },
-    {
-      "Name": "Elena Rostova",
-      "Rolle": "Lebenserhaltungssystem-Ingenieurin",
-      "Erfahrung_Jahre": 10,
-      "Fokusbereiche": ["Sauerstoff-Recycling", "Hydroponik"]
-    }
-  ],
-  "Meilensteine": [
-    {
-      "Titel": "Antriebstest Triebwerk Raptor-X",
-      "Datum": "2026-10-15",
-      "Abgeschlossen": true,
-      "Unteraufgaben": [
-        "Treibstoffzufuhr kalibrieren",
-        "Zündungssensor testen",
-        "Testlauf 30 Sekunden"
-      ]
-    },
-    {
-      "Titel": "Bemannter Testflug im Orbit",
-      "Datum": "2027-04-20",
-      "Abgeschlossen": false,
-      "Unteraufgaben": [
-        "Lebenserhaltungs-Check",
-        "Flugbahn-Simulation",
-        "Astronauten-Briefing"
-      ]
-    }
-  ]
+const extractLatestChangelogSections = (changelogRaw: string, maxSections = 3): string => {
+  const matches = [...changelogRaw.matchAll(/(?=^##\s+\[)/gm)];
+  if (matches.length === 0) return changelogRaw.trim();
+  const firstIdx = matches[0].index ?? 0;
+  const endIdx =
+    matches.length > maxSections
+      ? (matches[maxSections].index ?? changelogRaw.length)
+      : changelogRaw.length;
+  return changelogRaw.slice(firstIdx, endIdx).trim();
 };
 
-const exampleXml = `<?xml version="1.0" encoding="UTF-8"?>
-<Projektname Prioritaet="Kritisch" Budget_in_Mio_USD="4500" Aktiv="true">
-  <System_Settings>
-    <Verschluesselung>true</Verschluesselung>
-    <Sync_Intervall_Sekunden>300</Sync_Intervall_Sekunden>
-    <Backup_Server>Earth-Backup-01</Backup_Server>
-  </System_Settings>
-  <Tags>
-    <Tag>Space</Tag>
-    <Tag>Aerospace</Tag>
-    <Tag>NASA</Tag>
-    <Tag>Colony</Tag>
-  </Tags>
-  <Team_Mitglieder>
-    <Mitglied>
-      <Name>Dr. Sarah Connor</Name>
-      <Rolle>Missionsleiterin</Rolle>
-      <Erfahrung_Jahre>12</Erfahrung_Jahre>
-      <Fokusbereiche>
-        <Bereich>Antriebstechnik</Bereich>
-        <Bereich>Navigation</Bereich>
-      </Fokusbereiche>
-    </Mitglied>
-    <Mitglied>
-      <Name>John Doe</Name>
-      <Rolle>Chef-Geologe</Rolle>
-      <Erfahrung_Jahre>8</Erfahrung_Jahre>
-      <Fokusbereiche>
-        <Bereich>Bodenanalysen</Bereich>
-        <Bereich>Wasserquellen-Suche</Bereich>
-      </Fokusbereiche>
-    </Mitglied>
-    <Mitglied>
-      <Name>Elena Rostova</Name>
-      <Rolle>Lebenserhaltungssystem-Ingenieurin</Rolle>
-      <Erfahrung_Jahre>10</Erfahrung_Jahre>
-      <Fokusbereiche>
-        <Bereich>Sauerstoff-Recycling</Bereich>
-        <Bereich>Hydroponik</Bereich>
-      </Fokusbereiche>
-    </Mitglied>
-  </Team_Mitglieder>
-  <Meilensteine>
-    <Meilenstein Abgeschlossen="true">
-      <Titel>Antriebstest Triebwerk Raptor-X</Titel>
-      <Datum>2026-10-15</Datum>
-      <Unteraufgaben>
-        <Aufgabe>Treibstoffzufuhr kalibrieren</Aufgabe>
-        <Aufgabe>Zündungssensor testen</Aufgabe>
-        <Aufgabe>Testlauf 30 Sekunden</Aufgabe>
-      </Unteraufgaben>
-    </Meilenstein>
-    <Meilenstein Abgeschlossen="false">
-      <Titel>Bemannter Testflug im Orbit</Titel>
-      <Datum>2027-04-20</Datum>
-      <Unteraufgaben>
-        <Aufgabe>Lebenserhaltungs-Check</Aufgabe>
-        <Aufgabe>Flugbahn-Simulation</Aufgabe>
-        <Aufgabe>Astronauten-Briefing</Aufgabe>
-      </Unteraufgaben>
-    </Meilenstein>
-  </Meilensteine>
-</Projektname>`;
+const buildFirstRunWelcomeMarkdown = (): string => {
+  const latestChanges = extractLatestChangelogSections(rawChangelog, 3);
+  return `# Thanks for Downloading Fileditor!
 
-const exampleMarkdown = `# 🚀 Willkommen im Fileditor!
-
-Fileditor ist ein universeller, schlanker Visual File Editor für JSON, XML, Markdown und ToDo-Dateien. Mehr Infos findest du auf [nativeproduction.de](https://nativeproduction.de).
-
----
-layout: post
-title: "Mein erstes Markdown Dokument"
-author: "NativeProduction"
----
-
-## 📅 Datums- & Zeit-Support
-Dieses Dokument unterstützt automatisches Parsing von Discord-Zeitstempeln und benutzerdefinierten Datums-Angaben:
-
-* **Discord Timestamps (Stile):**
-  * Short Time (\`t\`): <t:1784132592:t>
-  * Long Time (\`T\`): <t:1784132592:T>
-  * Short Date (\`d\`): <t:1784132592:d>
-  * Long Date (\`D\`): <t:1784132592:D>
-  * Short Date/Time (\`f\`): <t:1784132592:f>
-  * Long Date/Time (\`F\`): <t:1784132592:F>
-  * Relative Time (\`R\`): <t:1784132592:R>
-* **Custom Date syntax:**
-  * Datumselement: @date(2026-07-15 19:45)
-
-## 📦 Docusaurus Admonition Boxes
-Wir unterstützen schöne Container-Boxen für strukturiertes Feedback. Verwende die dreifache Doppelpunkt-Syntax:
+Welcome to **Fileditor v${APP_VERSION}** — your fast, 100% offline desktop workspace for **JSON**, **XML**, **Markdown**, **ToDo**, and **Plain Text**.
 
 :::tip
-**TIPP:** Nutze die Leiste ganz oben links ("Datei > Neu"), um neue Tabs mit spezifischen Typen (JSON, XML oder Markdown) anzulegen!
+**Quick Start:** Drag and drop any supported file directly onto this window to open it, or click **File -> New** in the top menu. You can switch the UI language (**English**, **Deutsch**, **Español**) anytime under **Extras -> Settings**.
 :::
 
-:::info
-**INFORMATION:** Der Editor wechselt beim Auswählen eines Tabs automatisch in die entsprechende Syntaxhervorhebung.
-:::
+---
 
-:::warning
-**WARNUNG:** Ungespeicherte Änderungen werden beim Beenden zwischengespeichert, gehen aber verloren, wenn ein ungespeichertes Tab explizit geschlossen wird.
-:::
+## Latest Changes
 
-:::danger
-**GEFAHR:** Das direkte Überschreiben von Originaldateien ohne Backup kann zu Datenverlust führen.
-:::
-
-## 📝 Aufgabenliste (Task-List)
-- [x] Menüstruktur & Toolbar implementieren
-- [x] Discord \\\`<t:TIMESTAMP:x>\\\` & Custom \\\`@date(...)\\\` Parser hinzufügen
-- [ ] Erste eigene XML-Schema-Datei validieren
-- [ ] Markdown-PDF Export testen
-
-### 📊 Beispiel-Tabelle
-
-| Dateityp | Validierung | Live-Preview |
-| :--- | :--- | :--- |
-| **JSON** | Schema (Draft-04 bis 2020-12 & JTD) | Interaktive Miller-Spalten |
-| **XML** | Schema (XSD, DTD, RelaxNG, Schematron) | Miller-Spalten & Tabelle |
-| **Markdown** | Syntax-frei | Tailwind HTML Render |
-
-> "Das Schreiben in Markdown macht Spaß, ist leserlich und lässt sich sofort in schöne Dokumente umwandeln." - *Fileditor Team*
-
-Probiere es aus: Benutze die Formatierungsleiste oben, um Text **fett**, *kursiv* oder als \\\`Code\\\` zu formatieren!
+${latestChanges}
 `;
+};
 
 const App: React.FC = () => {
   const {
@@ -371,11 +219,11 @@ const App: React.FC = () => {
       }
 
       await initialize(
-        JSON.stringify(exampleJSON, null, 2),
         "",
-        exampleXml,
         "",
-        exampleMarkdown,
+        "",
+        "",
+        buildFirstRunWelcomeMarkdown(),
         isIsolated
       );
 

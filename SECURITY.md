@@ -34,3 +34,13 @@ Because Fileditor is maintained as a solo spare-time open-source project, report
 - **Markdown Sanitization**: All rendered Markdown preview and print HTML is sanitized via `DOMPurify`.
 - **Safe OS Launching**: External links are strictly restricted to `http://` and `https://` via Win32 `ShellExecuteW` (never `cmd.exe`), and direct execution of local executable/script extensions from document links is blocked.
 - **Signed Updates**: In-app updates via `tauri-plugin-updater` verify cryptographic Ed25519/Minisign signatures before installation.
+
+---
+
+## Code Signing Policy
+
+Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+- **Build Provenance**: Official release binaries and Windows installers are built deterministically on public GitHub Actions runners directly from tagged commits in this repository (`TheNativeGit/Fileditor`).
+- **Maintainer Roles**: Release tags, signing requests, and build workflow changes are reviewed and approved by the project maintainer ([TheNativeGit](https://github.com/TheNativeGit)).
+- **User Privacy**: Fileditor operates offline by default, collects no personal data, and sends zero telemetry. Network requests occur only when the user opens the optional GitHub Release update check (`Help -> Check for Updates...` or opt-in startup check).

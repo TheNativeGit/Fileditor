@@ -62,7 +62,7 @@ Download the latest release from **[GitHub Releases](https://github.com/TheNativ
    Get-FileHash .\Fileditor_*_x64-setup.exe -Algorithm SHA256
    ```
 
-> **Note on Windows SmartScreen:** Because Fileditor is a free, non-commercial open-source hobby project without a paid commercial EV certificate (open-source signing via SignPath Foundation is planned), Windows may display *"Windows protected your PC"* on new releases until download reputation builds up. Click **More info** -> **Run anyway** after verifying that you downloaded the file from the official `https://github.com/TheNativeGit/Fileditor/releases` page.
+> **Code Signing & Windows SmartScreen:** Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org) *(application in progress — see [Code Signing Policy](./SECURITY.md#code-signing-policy))*. Until an approved SignPath signing certificate and download reputation are established, Windows SmartScreen may display *"Windows protected your PC"* on newly published releases — click **More info** -> **Run anyway** after verifying the `SHA256SUMS.txt` checksum from the official `https://github.com/TheNativeGit/Fileditor/releases` page.
 
 ---
 
